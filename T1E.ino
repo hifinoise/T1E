@@ -207,8 +207,10 @@ void updateDisplay() {
   do {
     display.fillScreen(GxEPD_WHITE);
     display.setCursor(7, y - 25);
-    display.println(String(now.hour()) + ":" + String(now.minute())); // 22:23
+    char timeStr[6];
+    sprintf(timeStr, "%02d:%02d", now.hour(), now.minute());
     
+    display.println(timeStr); // 02:03
     display.setFont(&w3_ip18pt7b);
     display.setCursor(0, y + 5);
     display.println("---------"); 
