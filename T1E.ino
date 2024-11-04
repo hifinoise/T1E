@@ -3,11 +3,16 @@
 #include <RTClib.h>
 #include <WiFi.h>
 #include <NTPClient.h>
+#include <ESPmDNS.h>
 #include <WiFiUdp.h>
-#include <Fonts/FreeMonoBold24pt7b.h> // Large font for time
-#include <Fonts/FreeMonoBold12pt7b.h>  // Smaller font for date
-#include <Adafruit_GFX.h>
+#include <ArduinoOTA.h>
 #include "wifi_credentials.h" // Include Wi-Fi credentials
+#include <Adafruit_GFX.h>
+#include <Fonts/FreeMonoBold24pt7b.h> // Large font for time
+#include <Fonts/FreeMonoBold12pt7b.h> // More fonts; https://github.com/adafruit/Adafruit-GFX-Library/tree/master/Fonts
+#include "w3_ip28pt7b.h" // https://www.dafont.com/w3usdip.font?text=01%3A07+Friday+15th+August&back=theme
+#include "w3_ip18pt7b.h" 
+#include "w3_ip14pt7b.h"
 
 #define uS_TO_S_FACTOR 1000000ULL  /* Conversion factor for micro seconds to seconds */
 #define TIME_TO_SLEEP  60        /* Time ESP32 will go to sleep (in seconds) */
@@ -28,6 +33,13 @@
 
 // Battery monitoring pin
 #define BATTERY_PIN  0
+
+// Add these constants for OTA
+#define HOSTNAME "t2.local"  // Change this to whatever you'd like to call your device
+#define OTA_PASSWORD "timeisprecious"  // Change this to a secure password
+
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+char monthsOfTheYear[12][12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 // NTP server settings
 const long utcOffsetInSeconds = 19800; // UTC+5:30 for IST
@@ -96,11 +108,56 @@ void loop() {
 void connectToWiFi() {
   Serial.println("Connecting to Wi-Fi...");
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  
+  // Wait for connection with a timeout
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED && attempts < 20) {
     delay(500);
     Serial.print(".");
+    attempts++;
   }
-  Serial.println("\nConnected to Wi-Fi");
+  
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nConnected to Wi-Fi");
+    setupOTA();  // Initialize OTA after WiFi connection
+  } else {
+    Serial.println("\nWiFi connection failed!");
+  }
+}
+
+void setupOTA() {
+  ArduinoOTA.setHostname(HOSTNAME);
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+
+  ArduinoOTA.onStart([]() {
+    display.setFullWindow();
+    display.firstPage();
+    do {
+      display.fillScreen(GxEPD_WHITE);
+      display.setTextColor(GxEPD_BLACK);
+      display.setFont(&w3_ip28pt7b);
+      display.setCursor(7, 100);
+      display.print("OTA Update Starting...");
+    } while (display.nextPage());
+  });
+
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+
+  ArduinoOTA.onEnd([]() {
+    display.setFullWindow();
+    display.firstPage();
+    do {
+      display.fillScreen(GxEPD_WHITE);
+      display.setTextColor(GxEPD_BLACK);
+      display.setFont(&FreeMonoBold12pt7b);
+      display.setCursor(10, 100);
+      display.print("Update Complete!");
+    } while (display.nextPage());
+  });
+
+  ArduinoOTA.begin();
 }
 
 void checkAndSyncTime() {
@@ -134,53 +191,51 @@ void updateBatteryVoltage() {
 void updateDisplay() {
   DateTime now = rtc.now();
 
-  char timeBuffer[10];
-  snprintf(timeBuffer, sizeof(timeBuffer), "%02d:%02d", now.hour(), now.minute());
-
-  char dateBuffer[20];
-  snprintf(dateBuffer, sizeof(dateBuffer), "%02d %s", now.day(), monthName(now.month()));
-
+  display.setRotation(0);
+  display.setFont(&w3_ip28pt7b);
+  int16_t tbx, tby;
+  uint16_t tbw, tbh;
+  
+  uint16_t x = ((display.width() - tbw) / 2) - tbx;
+  uint16_t y = ((display.height() - tbh) / 2) - tby;
+  
+  display.fillScreen(GxEPD_WHITE);
+  display.setTextColor(GxEPD_BLACK);
+  
+  display.setFullWindow();
   display.firstPage();
   do {
     display.fillScreen(GxEPD_WHITE);
-    display.setTextColor(GxEPD_BLACK);
-
-    // Display time, centered
-    display.setFont(&FreeMonoBold24pt7b);
-    int16_t x1, y1;
-    uint16_t w, h;
-    display.getTextBounds(timeBuffer, 0, 0, &x1, &y1, &w, &h);
-    display.setCursor((display.width() - w) / 2, 100);
-    display.print(timeBuffer);
-
-    // Display date, centered
-    display.setFont(&FreeMonoBold12pt7b);
-    display.getTextBounds(dateBuffer, 0, 0, &x1, &y1, &w, &h);
-    display.setCursor((display.width() - w) / 2, 150);
-    display.print(dateBuffer);
+    display.setCursor(7, y - 25);
+    char timeStr[6];
+    sprintf(timeStr, "%02d:%02d", now.hour(), now.minute());
+    
+    display.println(timeStr); // 02:03
+    display.setFont(&w3_ip18pt7b);
+    display.setCursor(0, y + 5);
+    display.println("---------"); 
+    display.setCursor(7, y + 32);
+    display.println(daysOfTheWeek[now.dayOfTheWeek()]);    // Wednesday 
+    
+    display.setFont(&w3_ip14pt7b);
+    display.setCursor(7, y + 65);
+    display.println(String(now.day()) + ' ' + String(monthsOfTheYear[now.month() - 1]));    // 14 Nov
 
     // Draw battery icon
     drawBatteryIcon();
   } while (display.nextPage());
 }
 
-const char* monthName(int month) {
-  const char* monthNames[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-  return monthNames[month - 1];
-}
-
 void drawBatteryIcon() {
-  int x = 160, y = 0;
+  int x = 170, y = 0;
   display.drawRect(x, y, 30, 15, GxEPD_BLACK); // Battery Outline 
   display.fillRect(x + 31, y + 4, 2, 6, GxEPD_BLACK); // Battery terminal
   int fillWidth = (int)(30 * battPercent / 100); // Scale for 4.2V max
   display.fillRect(x + 1, y + 1, fillWidth, 13, GxEPD_BLACK); // Battery Fill
- // Uncomment for Battery Diagnostics
- //display.setCursor(140, 40);
- // display.print(String(batteryVoltage));
- // display.setCursor(140, 60);
- //display.print(String(battPercent));
+  // display.setCursor(140, 40);
+  // display.print(String(batteryVoltage));
+  // display.setCursor(140, 60);
+  // display.print(String(battPercent));
  
 }
 
@@ -198,16 +253,19 @@ void sleepCycle() {
 }
 
 void buttonLogic() {
-
-  // If Wi-Fi button is pressed, connect to Wi-Fi and update time
+  // If Wi-Fi button is pressed, connect to Wi-Fi and wait for potential OTA
   if (digitalRead(BUTTON_WIFI) == LOW) {
     connectToWiFi();
-    checkAndSyncTime();
-  }
-
- // If the set time button is pressed, enter the Set Time mode
-  if (digitalRead(BUTTON_SET) == LOW) {
-    setCustomTime();
+    if (WiFi.status() == WL_CONNECTED) {
+      delaySleep = 180000;  // Delay sleep for 1 minute to allow for OTA
+      // Wait for potential OTA update
+      unsigned long startTime = millis();
+      while (millis() - startTime < 60000) {  // Wait for 1 minute
+        ArduinoOTA.handle();
+        delay(10);
+      }
+      checkAndSyncTime();  // Sync time after OTA window
+    }
   }
 }
 
