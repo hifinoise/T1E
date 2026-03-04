@@ -1,125 +1,96 @@
 # T1E - E-Paper Watch
 
-*Because checking your phone for the time is so last decade.*
+> Time. For time's sake.
 
-![T1E Watch](https://ampere.works/images/t1e-hero.jpg)
+**The T1E is an open-source ePaper smartwatch that lasts for days, not hours. Minimal. Hackable. Yours.**
+
+Because checking your phone for the time is so last decade. The T1E prioritizes battery life over flashy animations. Built around an ESP32 microcontroller and a DS3231 RTC, it's designed for people who want their timepiece to actually keep time without requiring daily charging rituals.
+
+---
+
+## Features
+
+- **ePaper Display:** Crystal clear in direct sunlight and uses minimal power.
+- **4+ Days Battery Life:** Target 16+ days using intelligent partial refreshes. Charge less, live more.
+- **Real-Time Clock:** DS3231 maintains accurate timekeeping even when main MCU sleeps.
+- **Deep Sleep Mode:** Intelligent power management. 
+- **Fully Hackable:** 100% open-source hardware, firmware, and mechanical designs.
+- **Custom App Modes:** Various watch faces, a Pomodoro timer, virtual RPG dice roller, and Conway's Game of Life built-in.
 
 ## What's This Then?
 
-The T1E is an open-source e-paper watch that prioritizes battery life over flashy animations. Built around the ESP32-C3 and a DS3231 RTC, it's designed for people who want their timepiece to actually keep time without requiring daily charging rituals.
+This repository contains the full hardware designs, 3D printable case models, and the **official, native ESP-IDF firmware** (built via PlatformIO) for the T1E E-Paper Watch. 
 
-This is an Ampere Works project - part of our mission to make hardware design approachable without dumbing it down. Because the best way to understand how things work is to build them yourself, preferably with clear documentation and minimal existential dread.
-
-**Key Features:**
-- E-paper display (because pixels that stay put are the best pixels)
-- ESP32-C3 with WiFi/Bluetooth capability
-- DS3231 RTC for precision timekeeping
-- Passive buzzer for alarms that won't wake the neighbors
-- Open-source hardware and firmware
-- 3D printable case design
-- Designed to be understood, not just assembled
+Every design choice has a clear reason: the ESP32 wakes up just long enough to refresh the screen, while the external RTC handles timekeeping at micro-amp power levels.
 
 ## Repository Contents
 
 ```
 ├── hardware/
-│   ├── schematics/          # EasyEDA schematic files (and exported PDFs for the brave)
-│   ├── pcb/                 # PCB layout and gerbers 
-│   └── bom.csv              # Bill of materials
+│   ├── schematics/        # EasyEDA schematic files (and exported PDFs)
+│   ├── pcb/               # PCB layout and gerbers
+│   └── bom.csv            # Bill of materials
 ├── mechanical/
-│   ├── case/                # 3D printable case files (STL)
-│   └── assembly/            # Assembly instructions
-├── firmware/
-│   ├── src/                 # Arduino/ESP-IDF source code
-│   └── libraries/           # Required libraries
-└── docs/                    # Documentation and build guide
+│   ├── case/              # 3D printable case files (STL/STEP)
+│   └── assembly/          # Assembly instructions
+├── firmware/              # Native ESP-IDF via PlatformIO
+│   ├── src/               # Application logic layer
+│   ├── drivers/           # Custom E-Paper and RTC drivers
+│   └── hal/               # Hardware abstraction (power management/inputs)
+└── docs/                  # Build guides and documentation
 ```
 
 ## Technical Specifications
 
-- **MCU**: ESP32-C3 (RISC-V, WiFi/BLE)
-- **Display**: E-paper (model TBD - check hardware docs)
-- **RTC**: DS3231 with integrated crystal
-- **Power**: Li-Po battery with BMS
-- **Case**: 3D printed PLA+/PETG
-- **Connectivity**: WiFi 2.4GHz, Bluetooth LE
-
-## Circuit Overview
-
-The heart of the T1E is refreshingly straightforward:
-
-- **ESP32-C3**: Handles display updates, wireless connectivity, and user interface
-- **DS3231**: Maintains accurate time even when the main MCU is sleeping
-- **I2C Bus**: Connects RTC and display to the ESP32-C3
-- **Power Management**: Designed for extended battery life with deep sleep modes
-
-The DS3231's backup battery ensures your watch doesn't become a fashionable wrist-mounted paperweight if the main battery dies.
+- **MCU:** ESP32-C3 / ESP32-C6 (RISC-V, Dual-core, WiFi/BLE)
+- **Display:** High-contrast ePaper display
+- **RTC:** DS3231 with integrated crystal 
+- **Power:** LiPo battery with BMS
+- **Connectivity:** WiFi 2.4GHz & Bluetooth LE
 
 ## Getting Started
 
 ### Prerequisites
 
-- Arduino IDE or ESP-IDF
+- PlatformIO
 - 3D printer (for the case)
 - Basic soldering skills
 - Patience (surprisingly important for embedded development)
 
 ### Hardware Assembly
 
-1. **PCB Assembly**: Solder components according to the BOM and assembly guide
-2. **Case Printing**: Print case parts using provided STL files  
-3. **Final Assembly**: Mount PCB in case, connect battery, install display
+1. **PCB Assembly:** Solder components according to the BOM and assembly guide.
+2. **Case Printing:** Print case parts using provided STL files.
+3. **Final Assembly:** Mount PCB in case, connect battery, install display.
 
-*Note: Schematics designed in EasyEDA because sometimes convenience trumps tool snobbery. EasyEDA files included along with exported PDFs for those who prefer their schematics without the cloud dependency.*
-
-Detailed assembly instructions are in `/docs/assembly.md`.
+*(Detailed assembly instructions are in `/docs/assembly.md`)*
 
 ### Firmware Setup
 
-1. Clone this repository
-2. Install required libraries (listed in `/firmware/libraries/`)
-3. Configure WiFi credentials in `config.h`
-4. Flash firmware to ESP32-C3
-5. Set initial time via serial console or WiFi sync
+1. Install [PlatformIO](https://platformio.org/).
+2. Clone this repository.
+3. Open the repository in PlatformIO.
+4. Select your build environment (`env:t1e-c3` or `env:t1e-c6`).
+5. Build and flash the firmware to the ESP32 via USB.
+6. Set the initial time via the serial console or by configuring the WiFi sync credentials.
 
-## Design Philosophy
+## Design Philosophy & Contributing
 
-The T1E embodies the Ampere Works approach to making hardware approachable:
-
-- **Battery Life First**: E-paper display and RTC combo for minimal power consumption (because charging your watch daily is just smartphone anxiety in a different form factor)
-- **Understandable Complexity**: Every design choice has a clear reason that doesn't require a graduate degree to grasp
-- **Open Source**: Full hardware and software available under permissive licenses
-- **Hackable by Design**: Built to be modified, improved, and learned from - not just used
-- **Real-World Ready**: Designed for actual humans who want their projects to work, not just look impressive on social media
-
-## Contributing
-
-Found a bug? Have an improvement? Pull requests welcome!
-
-Areas where help is particularly appreciated:
-- Power optimization
-- Alternative display drivers
-- Case design improvements
-- Documentation
-
-## License
-
-- Hardware: CERN-OHL-W v2
-- Firmware: MIT License
-- Mechanical: CC BY-SA 4.0
-
-## Links
-
-- **Project Page**: https://ampere.works/t1e
-- **3D Model**: [Tinkercad Link](https://www.tinkercad.com/things/hXJ27IvFWx4-copy-of-t1e-v12-13-nov-2024-m2?sharecode=TuJhkoSxLSFucC7o3fV2j75Cr38F5Rp8J1hG9knSP6U)
-- **Ampere Works**: https://ampere.works
-
-## Support
-
-For questions, bug reports, or general discussion, open an issue on GitHub or reach out via the Ampere Works website.
+- **Battery Life First:** ePaper and an RTC combo for minimal power consumption.
+- **Hackable by Design:** Built to be modified—not just used. Feel free to tweak the display update logic, design a new case, or implement a fresh display driver.
+- **Contributing:** Pull requests are always welcome! Help is particularly appreciated with extreme power optimization, new UI app modes, and alternative display drivers.
 
 ---
 
-*"Time is an illusion. Lunchtime doubly so." - Douglas Adams*
+## License
 
-*But accurate timekeeping? That's just good engineering.*
+- **Hardware:** CERN-OHL-W v2
+- **Firmware:** MIT License
+- **Mechanical:** CC BY-SA 4.0
+
+## Support & About
+For questions, bug reports, or general discussion, open an issue on GitHub.
+
+> *"There is never time in the future in which we will work out our salvation. The challenge is in the moment; the time is always now."* — James Baldwin
+
+*The T1E is a project by [Ampere Works](https://ampere.works/t1e) - part of a mission to make hardware design approachable without dumbing it down.*

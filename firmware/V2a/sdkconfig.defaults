@@ -1,0 +1,16 @@
+# T1E sdkconfig defaults
+
+# Flash — force 4MB (XIAO C6 has 4MB, not the 8MB the devkit board assumes)
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+# Explicitly disable 8MB to prevent board definition from winning
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=
+CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+
+# Main task stack — generous for our framebuffer ops
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
+
+# Log level
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# Optimize for size
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
