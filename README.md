@@ -4,7 +4,7 @@
 
 **The T1E is an open-source ePaper smartwatch that lasts for days, not hours. Minimal. Hackable. Yours.**
 
-Because checking your phone for the time is so last decade. The T1E prioritizes battery life over flashy animations. Built around an ESP32 microcontroller and a DS3231 RTC, it's designed for people who want their timepiece to actually keep time without requiring daily charging rituals.
+Because checking your phone for the time is so last decade. The T1E prioritises battery life over flashy animations. Built around an ESP32 microcontroller and a DS3231 RTC, it's designed for people who want their timepiece to actually keep time without requiring daily charging rituals.
 
 ---
 
@@ -12,14 +12,14 @@ Because checking your phone for the time is so last decade. The T1E prioritizes 
 
 - **ePaper Display:** Crystal clear in direct sunlight and uses minimal power.
 - **4+ Days Battery Life:** Target 16+ days using intelligent partial refreshes. Charge less, live more.
-- **Real-Time Clock:** DS3231 maintains accurate timekeeping even when main MCU sleeps.
-- **Deep Sleep Mode:** Intelligent power management. 
+- **Real-Time Clock:** DS3231 maintains accurate timekeeping even when the main MCU sleeps.
+- **Deep Sleep Mode:** Intelligent power management. [Not Implemented on IDF Yet!]
 - **Fully Hackable:** 100% open-source hardware, firmware, and mechanical designs.
-- **Custom App Modes:** Various watch faces, a Pomodoro timer, virtual RPG dice roller, and Conway's Game of Life built-in.
+- **Custom App Modes:** Various watch faces, a Pomodoro timer, a dice roller, and Conway's Game of Life built in.
 
 ## What's This Then?
 
-This repository contains the full hardware designs, 3D printable case models, and the **official, native ESP-IDF firmware** (built via PlatformIO) for the T1E E-Paper Watch. 
+This repository contains the full hardware designs, 3D-printable case models, and the **official, native ESP-IDF firmware** (built via PlatformIO) for the T1E E-Paper Watch. 
 
 Every design choice has a clear reason: the ESP32 wakes up just long enough to refresh the screen, while the external RTC handles timekeeping at micro-amp power levels.
 
@@ -33,10 +33,9 @@ Every design choice has a clear reason: the ESP32 wakes up just long enough to r
 ├── mechanical/
 │   ├── case/              # 3D printable case files (STL/STEP)
 │   └── assembly/          # Assembly instructions
-├── firmware/              # Native ESP-IDF via PlatformIO
-│   ├── src/               # Application logic layer
-│   ├── drivers/           # Custom E-Paper and RTC drivers
-│   └── hal/               # Hardware abstraction (power management/inputs)
+├── firmware/              
+│   ├── V2a/                # ESP-IDF Version (Experimental)
+│   └── V1.1/               # Old Arduino-based code
 └── docs/                  # Build guides and documentation
 ```
 
@@ -78,7 +77,7 @@ Every design choice has a clear reason: the ESP32 wakes up just long enough to r
 
 - **Battery Life First:** ePaper and an RTC combo for minimal power consumption.
 - **Hackable by Design:** Built to be modified—not just used. Feel free to tweak the display update logic, design a new case, or implement a fresh display driver.
-- **Contributing:** Pull requests are always welcome! Help is particularly appreciated with extreme power optimization, new UI app modes, and alternative display drivers.
+- **Contributing:** Pull requests are always welcome! Help is particularly appreciated with extreme power optimisation, new UI app modes, and alternative display drivers.
 
 ---
 
